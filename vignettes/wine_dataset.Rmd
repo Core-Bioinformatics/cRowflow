@@ -1,0 +1,140 @@
+---
+title: "Crow - Wine Dataset Vignette"
+output: html_document
+date: "2025-01-22"
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+
+library(cRowflow)
+library(dplyr)
+library(caret)
+library(plotly)
+library(ggplot2)
+
+set.seed(42)
+
+# Create a 3D scatter plot
+create_3d_plot_pca <- function(pca, color_vector, categorical=FALSE, title_addition="") {
+  if (categorical) {
+    pca$color <- as.factor(color_vector)
+  } else {
+    pca$color <- color_vector
+  }
+  
+  plot_ly(data = data.frame(pca), 
+          x = ~PC1, y = ~PC2, z = ~PC3, 
+          color = ~color,
+          type = "scatter3d", 
+          mode = "markers") %>%
+    layout(
+      title = paste0("Wine Dataset PCA", title_addition),
+      scene = list(
+        xaxis = list(title = "PC 1"),
+        yaxis = list(title = "PC 2"),
+        zaxis = list(title = "PC 3")
+      )
+    )
+}
+```
+
+
+```{r}
+data <- read.csv("/Users/macbookpro/Desktop/Crow/data/wine_df.csv")
+data$X <- NULL
+head(data)
+```
+
+```{r}
+summary(data)
+```
+Features are in much different scales. We have to scale the data before proceeding to clustering.
+
+```{r}
+# Scale data.
+data_scaled <- scale(data)
+
+# Calculate PCA.
+pca <- data.frame(prcomp(data_scaled)$x)
+```
+
+Let's run repeated stochastic clustering using `kmeans`. We will run the algorithm 30 times, check it's clustering stability over repeated iterations, and get the majority voting label for each sample.
+
+Will set the number of clusters to 5 for this first experiment.
+```{r}
+scr <- Crow::stochastic_clustering_runner(
+  data_scaled,
+  kmeans,
+  labels_name = "cluster",
+  n_runs = 30,
+  centers=5
+)
+```
+
+Let's visualise the majority voting labels returned by `Crow`.
+```{r}
+create_3d_plot_pca(pca, scr$majority_voting_labels, T, title_addition = " - Clusters")
+```
+
+Let's now examine the stability of each element over the repeated iterations.
+```{r}
+summary(scr$ecc)
+```
+The mean ECC is 0.65 and median is 0.68. 
+```{r}
+create_3d_plot_pca(pca, scr$ecc, title_addition = " - ECC")
+```
+
+The most unstable points are the ones at the boundaries between clusters 2, 3, and 5.
+
+We can use `Crow`'s `parameter_searcher` function to find optimal clustering parameter values that result in reproducible and robust clustering results.
+```{r}
+param_grid = list(centers=seq(3,8), algorithm = c("Hartigan-Wong", "Lloyd", "Forgy", "MacQueen"))
+
+parameter_searcher <- Crow::parameter_searcher(
+  data_scaled,
+  kmeans,
+  labels_name = "cluster",
+  param_grid = param_grid,
+  n_runs = 30,
+  iter.max = 30
+)
+```
+
+Let's visualise the results when changing the number of clusters and the algorithm implementation.
+```{r}
+
+Crow::plot_heatmap(parameter_searcher$results_df, "centers", "algorithm")
+```
+The heatmap displays the median ECC values for different combinations of k-means clustering algorithms and the number of cluster centers. The results indicate that lower center values (e.g., 3, 4) yield higher ECC values, with the Hartigan-Wong implementation producing more stable results in all cases. In contrast, higher center values (e.g., 8) lead to lower ECC scores across all algorithms.
+
+Let’s further optimize clustering stability when the number of clusters (`centers`) is set to 4 and the implementation is Hartigan-Wong by identifying the optimal feature subset using a genetic algorithm. The current median ECC for that configuration is 0.79.
+```{r}
+set.seed(42)
+genetic_fs <- Crow::genetic_algorithm_feature_selector(
+  data_scaled,
+  kmeans,
+  labels_name = "cluster",
+  verbose = T,
+  n_generations_no_change = 5,
+  centers=4,
+  algorithm = "Hartigan-Wong",
+  iter.max=30
+)
+
+Crow::plot_ga_fitness_evolution(genetic_fs$history)
+```
+
+
+```{r}
+genetic_fs_best_fitness <- genetic_fs$best_fitness_scr_result
+create_3d_plot_pca(pca, genetic_fs_best_fitness$ecc, title_addition = " - ECC AFTER GA OPTIMIZATION")
+create_3d_plot_pca(pca, genetic_fs_best_fitness$majority_voting_labels, categorical = T, title_addition = " - CLUSTERS")
+```
+
+By keeping only 7 of the features we were able to produce a much more stable clustering with the same configurations (centers=4, algorithm = "Hartigan-Wong", iter.max=30). 
+```{r}
+colnames(data_scaled[,genetic_fs$best_features])
+```
+We can 

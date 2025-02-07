@@ -1,0 +1,21 @@
+Package: cRowflow
+Type: Package
+Title: Assess clustering stability through repeated stochastic clustering.
+Version: 0.1.0
+Author: Rafael Kollyfas
+Maintainer: Rafael Kollyfas <rk720@cam.ac.uk>
+Description: cRowflow is designed for assessing clustering stability through repeated stochastic clustering. 
+    It is compatible with any clustering algorithm that outputs labels, provided it includes stochasticity (i.e., results change with random seed).
+License: MIT
+Encoding: UTF-8
+LazyData: true
+Imports:
+  ClustAssess,
+  caret,
+  ggplot2,
+  dplyr,
+  tidyr,
+  viridis,
+  purrr,
+  rlang
+RoxygenNote: 7.3.2
