@@ -1,5 +1,5 @@
 ---
-title: "Crow - Wine Dataset Vignette"
+title: "cRowflow - Wine Dataset Vignette"
 output: html_document
 date: "2025-01-22"
 ---
@@ -63,7 +63,7 @@ Let's run repeated stochastic clustering using `kmeans`. We will run the algorit
 
 Will set the number of clusters to 5 for this first experiment.
 ```{r}
-scr <- Crow::stochastic_clustering_runner(
+scr <- cRowflow::stochastic_clustering_runner(
   data_scaled,
   kmeans,
   labels_name = "cluster",
@@ -72,7 +72,7 @@ scr <- Crow::stochastic_clustering_runner(
 )
 ```
 
-Let's visualise the majority voting labels returned by `Crow`.
+Let's visualise the majority voting labels returned by `cRowflow`.
 ```{r}
 create_3d_plot_pca(pca, scr$majority_voting_labels, T, title_addition = " - Clusters")
 ```
@@ -88,11 +88,11 @@ create_3d_plot_pca(pca, scr$ecc, title_addition = " - ECC")
 
 The most unstable points are the ones at the boundaries between clusters 2, 3, and 5.
 
-We can use `Crow`'s `parameter_searcher` function to find optimal clustering parameter values that result in reproducible and robust clustering results.
+We can use `cRowflow`'s `parameter_searcher` function to find optimal clustering parameter values that result in reproducible and robust clustering results.
 ```{r}
 param_grid = list(centers=seq(3,8), algorithm = c("Hartigan-Wong", "Lloyd", "Forgy", "MacQueen"))
 
-parameter_searcher <- Crow::parameter_searcher(
+parameter_searcher <- cRowflow::parameter_searcher(
   data_scaled,
   kmeans,
   labels_name = "cluster",
@@ -105,14 +105,14 @@ parameter_searcher <- Crow::parameter_searcher(
 Let's visualise the results when changing the number of clusters and the algorithm implementation.
 ```{r}
 
-Crow::plot_heatmap(parameter_searcher$results_df, "centers", "algorithm")
+cRowflow::plot_heatmap(parameter_searcher$results_df, "centers", "algorithm")
 ```
 The heatmap displays the median ECC values for different combinations of k-means clustering algorithms and the number of cluster centers. The results indicate that lower center values (e.g., 3, 4) yield higher ECC values, with the Hartigan-Wong implementation producing more stable results in all cases. In contrast, higher center values (e.g., 8) lead to lower ECC scores across all algorithms.
 
 Let’s further optimize clustering stability when the number of clusters (`centers`) is set to 4 and the implementation is Hartigan-Wong by identifying the optimal feature subset using a genetic algorithm. The current median ECC for that configuration is 0.79.
 ```{r}
 set.seed(42)
-genetic_fs <- Crow::genetic_algorithm_feature_selector(
+genetic_fs <- cRowflow::genetic_algorithm_feature_selector(
   data_scaled,
   kmeans,
   labels_name = "cluster",
@@ -123,7 +123,7 @@ genetic_fs <- Crow::genetic_algorithm_feature_selector(
   iter.max=30
 )
 
-Crow::plot_ga_fitness_evolution(genetic_fs$history)
+cRowflow::plot_ga_fitness_evolution(genetic_fs$history)
 ```
 
 
