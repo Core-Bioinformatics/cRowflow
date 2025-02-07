@@ -112,7 +112,6 @@ Evaluates how stable clustering assignments remain across different data partiti
 
 #### Function: `kfold_clustering_validator()`
 ```r
-# Simulate dataset
 set.seed(42)
 my_data <- matrix(rnorm(200 * 10), ncol = 10)
 
@@ -137,7 +136,6 @@ Tests how stable clustering results are when features are altered/perturbed. The
 
 #### Function: `perturbation_robustness_tester()`
 ```r
-# Simulate dataset
 set.seed(42)
 my_data <- matrix(rnorm(200 * 10), ncol = 10)
 
@@ -185,6 +183,11 @@ library(cRowflow)
 - purrr
 - rlang
 - ClustAssess
+
+## Tutorials
+The package can be applied to any clustering task (as long as the clustering algorithm used is stochastic).
+
+In the [wine dataset vignette](vignettes/wine_dataset.html), we show how to use `cRowflow` with `kmeans` to assess clustering stability, optimize hyperparameters, and refine feature selection. We first evaluate clustering consistency on typical unoptimised parameters, then identify the most stable configuration, and finally improve stability by selecting an optimal feature subset.
 
 ## License
 This package is released under the MIT License.

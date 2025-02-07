@@ -137,4 +137,3 @@ By keeping only 7 of the features we were able to produce a much more stable clu
 ```{r}
 colnames(data_scaled[,genetic_fs$best_features])
 ```
-We can 
