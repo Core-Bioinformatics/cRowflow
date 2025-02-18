@@ -2,13 +2,13 @@
 % Please edit documentation in R/plotting.R
 \name{plot_kfold_scores}
 \alias{plot_kfold_scores}
-\title{Plot aggregated element similarity scores across k-folds using ggplot2.}
+\title{Plot K-Fold Similarity Scores}
 \usage{
-plot_kfold_scores(kfolds_results, agg_func = base::median)
+plot_kfold_scores(kfolds_results, agg_func = median)
 }
 \arguments{
-\item{kfolds_results}{A named list containing k-fold results, where each element
-contains an "el_score_vector" of similarity scores.}
+\item{kfolds_results}{A named list containing k-fold results, where each element includes an "el_score_vector"
+of similarity scores.}
 
 \item{agg_func}{A function to aggregate scores (default: median).}
 }
@@ -16,6 +16,28 @@ contains an "el_score_vector" of similarity scores.}
 A ggplot object representing the k-fold similarity scores.
 }
 \description{
-Plots aggregated element similarity scores across multiple k-folds using a specified
-aggregation function.
+Plot aggregated element-centric similarity (ECS) scores across k-folds.
+}
+\details{
+This function aggregates ECS scores (using a specified aggregation function) from multiple k-folds
+and plots them along with an overall aggregated score.
+}
+\examples{
+\dontrun{
+  set.seed(42)
+  data <- matrix(rnorm(2000), nrow = 200, ncol = 10)
+  results <- kfold_clustering_validator(
+    data = data,
+    clustering_algo = kmeans,
+    labels_name = "cluster",
+    k_folds = 5,
+    n_runs = 30,
+    verbose = TRUE,
+    centers = 3
+  )
+  baseline <- results$baseline_results
+  kfold_results <- results$kfolds_robustness_results
+  plot_kfold_scores(kfold_results, agg_func = median)
+}
+
 }

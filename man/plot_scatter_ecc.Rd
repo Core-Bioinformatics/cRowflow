@@ -16,25 +16,48 @@ plot_scatter_ecc(
 )
 }
 \arguments{
-\item{df}{A data frame containing the data.}
+\item{df}{A data frame containing the input data.}
 
-\item{x_col}{A character string specifying the column name for the x-axis.}
+\item{x_col}{A character string specifying the name of the column to plot on the x-axis.}
 
-\item{y_col}{A character string specifying the column name for the y-axis.}
+\item{y_col}{A character string specifying the name of the column to plot on the y-axis.}
 
-\item{color_col}{A character string specifying the column name for coloring the points.}
+\item{color_col}{A character string specifying the name of the column to use for coloring the points.}
 
 \item{title}{A character string specifying the title of the plot (default: "Scatter Plot - ECC").}
 
-\item{alpha}{A numeric value specifying the transparency of the points (default: 0.7).}
+\item{alpha}{A numeric value specifying the transparency level for the points (default: 0.7).}
 
 \item{size}{A numeric value specifying the size of the points (default: 2).}
 
-\item{cmap}{A character string specifying the color map option (default: "viridis").}
+\item{cmap}{A character string specifying the color map used for the points (default: "viridis").}
 }
 \value{
-A ggplot object representing the scatter plot.
+A ggplot object representing the generated scatter plot.
 }
 \description{
-Plot a scatter plot of two numeric columns in a data frame, colored by a third column.
+Generate a scatter plot with color-coded points. Intended to be used for visualizing the
+stability of individual points using element-centric consistency (i.e., where the color
+column represents ECC).
+}
+\examples{
+\dontrun{
+  set.seed(42)
+  data <- matrix(rnorm(2000), nrow = 200, ncol = 10)
+  results <- stochastic_clustering_runner(
+    data = data,
+    clustering_algo = kmeans,
+    labels_name = 'cluster',
+    n_runs = 30,
+    verbose = TRUE,
+    centers = 3
+  )
+  library(umap)
+  umap_res <- umap::umap(data)
+  umap_df <- as.data.frame(umap_res$layout)
+  colnames(umap_df) <- c("UMAP_1", "UMAP_2")
+  umap_df$ecc <- results$ecc
+  plot_scatter_ecc(umap_df, "UMAP_1", "UMAP_2", "ecc")
+}
+
 }

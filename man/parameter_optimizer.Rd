@@ -2,7 +2,7 @@
 % Please edit documentation in R/optimization.R
 \name{parameter_optimizer}
 \alias{parameter_optimizer}
-\title{Parameter-wise Optimization for a Stochastic Clustering Algorithm}
+\title{Parameter Optimizer for Stochastic Clustering}
 \usage{
 parameter_optimizer(
   data,
@@ -15,40 +15,60 @@ parameter_optimizer(
 )
 }
 \arguments{
-\item{data}{A data matrix or data frame to cluster.}
+\item{data}{A data frame or matrix of shape \code{(n_samples, n_features)}.}
 
-\item{clustering_algo}{A function (or callable) that performs clustering
-and returns a vector of cluster labels directly or stores the labels in `labels_name`.}
+\item{clustering_algo}{A clustering function or callable (e.g., \code{kmeans}) that is stochastic and
+compatible with \code{\link{stochastic_clustering_runner}}.}
 
-\item{labels_name}{A string with the name of the label containing the clusters returned by the algorithm.}
+\item{labels_name}{A string with the name of the parameter indicating where the cluster labels are stored in
+the output of \code{clustering_algo}.}
 
-\item{parameters_optimise_list}{A named list of form
-\code{list(parameter_name = c(value1, value2, ...))}, specifying parameter
-names and their candidate values.}
+\item{parameters_optimise_list}{A named list specifying the parameters and their candidate values, e.g.,
+\code{list(n_clusters = c(2, 3, 4))}.}
 
-\item{n_runs}{Number of repeated runs (defaults to 30).}
+\item{n_runs}{Integer; number of clustering runs per parameter setting (default is 30).}
 
-\item{verbose}{Logical; if \code{TRUE}, print progress messages.}
+\item{verbose}{Logical; if \code{TRUE}, prints progress messages.}
 
-\item{...}{Additional parameters passed to \code{clustering_algo}, beyond the
-one being varied.}
+\item{...}{Additional parameters to be passed to \code{clustering_algo} (beyond the one being tuned).}
 }
 \value{
 A list with two components:
-\itemize{
-  \item \code{results_df}: A data frame, each row capturing:
-  \itemize{
-    \item \code{param}: a string \code{"paramName_value"}
-    \item \code{ecc}: the numeric vector of ECC values from each run
-    \item \code{median_ecc}: the median of those ECC values
-  }
-  \item \code{stochastic_clustering_results}: a named list of full outputs
-    from \code{stochastic_clustering_runner} for each parameter setting
-    tested, keyed by \code{"paramName_value"}.
+\describe{
+  \item{\code{results_df}}{A data frame where each row represents a parameter-value combination.
+     Each row includes:
+     \itemize{
+       \item \code{param}: a string of the form \code{"parameterName_value"},
+       \item \code{ecc}: the numeric vector of ECC values from each run,
+       \item \code{median_ecc}: the median ECC across runs.
+     }}
+  \item{\code{stochastic_clustering_results}}{A named list containing the full output from
+     \code{stochastic_clustering_runner} for each parameter setting tested, keyed by \code{"parameterName_value"}.}
 }
 }
 \description{
-Tries each candidate value of each parameter (one parameter at a time)
-while keeping other arguments fixed. Runs repeated stochastic clustering
-for each setting and collects element consistency (ECC) results.
+Optimizes individual hyperparameters of a stochastic clustering algorithm.
+}
+\details{
+This function systematically tunes each hyperparameter separately by performing repeated clustering
+and evaluating stability using Element-Centric Consistency (ECC). It's purpose is to help identify the
+value of each parameter that maximizes clustering robustness.
+}
+\examples{
+\dontrun{
+  set.seed(42)
+  data <- matrix(rnorm(2000), nrow = 200, ncol = 10)
+  results <- parameter_optimizer(
+    data = data,
+    clustering_algo = kmeans,
+    labels_name = "cluster",
+    parameters_optimise_list = list(centers = 2:4),
+    n_runs = 30,
+    verbose = TRUE
+  )
+  results_df <- results$results_df
+  clustering_details <- results$stochastic_clustering_results
+  print(results_df)
+}
+
 }

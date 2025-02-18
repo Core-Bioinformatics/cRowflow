@@ -12,6 +12,9 @@ get_clustering_labels(data, clustering_algo, algo_params, labels_name)
 \item{clustering_algo}{A function that returns cluster labels (vector).}
 
 \item{algo_params}{A list of parameters passed to `clustering_algo`.}
+
+\item{labels_name}{A string with the name of the parameter indicating where the cluster labels are stored in
+the output of \code{clustering_algo}.}
 }
 \value{
 Integer or numeric vector of cluster labels.

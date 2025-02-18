@@ -70,17 +70,12 @@ mutation, converging on the feature set that maximizes clustering robustness.
 }
 \examples{
 \dontrun{
-  # Example using k-means clustering:
   set.seed(42)
   data <- matrix(rnorm(2000), nrow = 200, ncol = 10)
-  clustering_algo <- function(data, centers) {
-    km <- kmeans(data, centers = centers)
-    km$cluster
-  }
   ga_results <- genetic_algorithm_feature_selector(
     data = data,
-    clustering_algo = clustering_algo,
-    labels_name = NULL,
+    clustering_algo = kmeans,
+    labels_name = "cluster",
     n_runs = 30,
     population_size = 20,
     generations = 50,
@@ -94,8 +89,6 @@ mutation, converging on the feature set that maximizes clustering robustness.
   )
   print("Best Features:")
   print(ga_results$best_features)
-  print("Best ECC Score:")
-  print(ga_results$best_ecc)
 }
 
 }

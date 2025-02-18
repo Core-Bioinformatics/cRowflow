@@ -8,7 +8,7 @@ plot_heatmap(
   parameter_search_results_df,
   key1 = NULL,
   key2 = NULL,
-  agg_func = base::median,
+  agg_func = median,
   fixed_params = NULL
 )
 }
@@ -16,17 +16,38 @@ plot_heatmap(
 \item{parameter_search_results_df}{A data frame containing a 'params' column (list of parameter settings)
 and a 'median_ecc' column.}
 
-\item{key1}{(Optional) The first parameter for the heatmap. If NULL, the first parameter in the data is used.}
+\item{key1}{(Optional) A character string specifying the first parameter for the heatmap.
+If NULL, the first parameter in the data is used.}
 
-\item{key2}{(Optional) The second parameter for the heatmap. If NULL, the second parameter in the data is used.}
+\item{key2}{(Optional) A character string specifying the second parameter for the heatmap.
+If NULL, the second parameter in the data is used.}
 
-\item{agg_func}{(Optional) Aggregation function (e.g., mean, median). Default is median.}
+\item{agg_func}{(Optional) An aggregation function (e.g., mean, median). Default is median.}
 
 \item{fixed_params}{(Optional) A named list of parameters to fix at specific values.}
 }
 \value{
-A ggplot object representing the heatmap.
+A ggplot object representing the generated heatmap.
 }
 \description{
-Plots a heatmap of median ECC scores for combinations of two parameters.
+Plot a heatmap of median element-centric consistency (ECC) scores for combinations of two parameters.
+Expected input is a data frame with a 'params' column (a list of parameter settings) and a 'median_ecc' column.
+}
+\examples{
+\dontrun{
+  set.seed(42)
+  data <- matrix(rnorm(2000), nrow = 200, ncol = 10)
+  param_grid <- list(centers = 2:4, nstart = c(1, 5))
+  results <- parameter_searcher(
+    data = data,
+    clustering_algo = kmeans,
+    labels_name = "cluster",
+    param_grid = param_grid,
+    n_runs = 30,
+    verbose = TRUE
+  )
+  results_df <- results$results_df
+  plot_heatmap(results_df, key1 = "centers", key2 = "nstart", agg_func = median)
+}
+
 }

@@ -7,7 +7,7 @@
 #' value of each parameter that maximizes clustering robustness.
 #'
 #' @param data  A data frame or matrix of shape \code{(n_samples, n_features)}.
-#'  @param clustering_algo A clustering function or callable (e.g., \code{kmeans}) that is stochastic and
+#' @param clustering_algo A clustering function or callable (e.g., \code{kmeans}) that is stochastic and
 #'   compatible with \code{\link{stochastic_clustering_runner}}.
 #' @param labels_name  A string with the name of the parameter indicating where the cluster labels are stored in
 #'   the output of \code{clustering_algo}.

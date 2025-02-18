@@ -15,43 +15,73 @@ kfold_clustering_validator(
 )
 }
 \arguments{
-\item{data}{A matrix or data frame of shape \code{(n_samples, n_features)}.}
+\item{data}{A data frame or matrix of shape \code{(n_samples, n_features)} to cluster.}
 
-\item{clustering_algo}{A function or callable (e.g. \code{kmeans}) that performs clustering
-and is compatible with \code{\link{stochastic_clustering_runner}}.}
+\item{clustering_algo}{A clustering function or callable (e.g., \code{kmeans}) that is stochastic and
+compatible with \code{\link{stochastic_clustering_runner}}.}
 
 \item{labels_name}{A string with the name of the label containing the clusters returned by the algorithm.}
 
-\item{k_folds}{Integer. Number of folds (default 5).}
+\item{k_folds}{Integer; number of folds for cross-validation (default is 5).}
 
-\item{n_runs}{Integer. Number of repeated runs for each clustering call (default 30).}
+\item{n_runs}{Integer; number of repeated runs per clustering call (default is 30).}
 
-\item{verbose}{Logical. If \code{TRUE}, prints progress messages (default \code{FALSE}).}
+\item{verbose}{Logical; if \code{TRUE}, prints progress messages (default is \code{FALSE}).}
 
-\item{...}{Additional parameters passed on to \code{\link{stochastic_clustering_runner}} and
-subsequently to \code{clustering_algo}.}
+\item{...}{Additional parameters passed to \code{clustering_algo}.}
 }
 \value{
-A named list with:
+A named list with two components:
 \describe{
   \item{\code{baseline_results}}{
-    The result of clustering the full dataset (a list typically containing elements such as
-    \code{majority_voting_labels}, \code{ecc}, \code{partitions}, etc.).}
+    A list containing the clustering results on the full dataset (e.g., \code{majority_voting_labels},
+    \code{ecc}, \code{partitions}, etc.).
+  }
   \item{\code{kfolds_robustness_results}}{
-    A list with one entry per fold. Each entry is itself a list containing:
+    A list with one entry per fold. Each entry is a list containing:
     \describe{
-      \item{\code{stochastic_clustering_results}}{The clustering result on the subset of data (fold).}
-      \item{\code{used_indices}}{Indices of the data rows used for this fold’s clustering.}
-      \item{\code{leave_out_indices}}{Indices of the data rows left out in this fold.}
-      \item{\code{el_score_vector}}{A numeric vector of element-wise similarity scores comparing
-            the fold’s majority-voting labels to the baseline’s labels on the same indices,
-            as computed by \code{clustassess::element_sim_elscore}.}
-    }}
+      \item{\code{stochastic_clustering_results}}{
+        The clustering results on the training subset of the current fold.
+      }
+      \item{\code{used_indices}}{
+        The indices of the data used for clustering in the current fold.
+      }
+      \item{\code{leave_out_indices}}{
+        The indices of the data left out in the current fold.
+      }
+      \item{\code{el_score_vector}}{
+        A numeric vector of element-wise similarity scores comparing the fold's majority-voting labels
+        with the corresponding baseline labels, as computed by \code{ClustAssess::element_sim_elscore}.
+      }
+    }
+  }
 }
 }
 \description{
-Perform k-fold validation on a clustering algorithm by splitting the data into k folds.
-On each iteration, the algorithm clusters the "training" fold (k-1 parts), and we compare
-the resulting majority-voting labels to the baseline clustering labels (obtained from clustering
-the entire dataset).
+Performs k-fold validation to assess clustering stability.
+}
+\details{
+This function first clusters the full dataset to obtain baseline clustering labels.
+It then performs k-fold cross-validation by splitting the data into k folds, clustering
+on each training set (k-1 folds), and comparing the resulting majority-voting labels with
+those obtained from the full dataset. Element-Centric Similarity (ECS) is computed to quantify
+the consistency between fold-level clustering and the baseline.
+}
+\examples{
+\dontrun{
+  set.seed(42)
+  data <- matrix(rnorm(2000), nrow = 200, ncol = 10)
+  results <- kfold_clustering_validator(
+    data = data,
+    clustering_algo = kmeans,
+    labels_name = "cluster",
+    k_folds = 5,
+    n_runs = 30,
+    verbose = TRUE,
+    centers = 3
+  )
+  baseline <- results$baseline_results
+  kfold_results <- results$kfolds_robustness_results
+}
+
 }

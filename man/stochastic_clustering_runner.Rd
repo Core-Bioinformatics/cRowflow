@@ -56,17 +56,12 @@ The clustering results from each run are reconciled through majority voting and 
 }
 \examples{
 \dontrun{
-  # Example with k-means clustering:
   set.seed(42)
   data <- matrix(rnorm(2000), nrow = 200, ncol = 10)
-  clustering_algo <- function(data, centers) {
-    km <- kmeans(data, centers = centers)
-    km$cluster
-  }
   results <- stochastic_clustering_runner(
     data = data,
-    clustering_algo = clustering_algo,
-    labels_name = NULL,
+    clustering_algo = kmeans,
+    labels_name = "cluster",
     n_runs = 30,
     verbose = TRUE,
     centers = 3

@@ -1,7 +1,10 @@
 ---
 title: "cRowflow - Wine Dataset Vignette"
-output: html_document
-date: "2025-01-22"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteIndexEntry{Wine Dataset Vignette}
+  %\VignetteEncoding{UTF-8}
 ---
 
 ```{r setup, include=FALSE}
@@ -41,7 +44,8 @@ create_3d_plot_pca <- function(pca, color_vector, categorical=FALSE, title_addit
 
 
 ```{r}
-data <- read.csv("/Users/macbookpro/Desktop/Crow/data/wine_df.csv")
+data_path <- system.file("extdata", "wine_df.csv", package = "cRowflow")
+data <- read.csv(data_path)
 data$X <- NULL
 head(data)
 ```

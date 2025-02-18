@@ -16,36 +16,65 @@ perturbation_robustness_tester(
 )
 }
 \arguments{
-\item{data}{A matrix or data frame representing the dataset of size \code{(n_samples, n_features)}.}
+\item{data}{A data frame or matrix of shape \code{(n_samples, n_features)} representing the dataset to cluster.}
 
-\item{clustering_algo}{A function or callable (e.g., \code{kmeans}) that performs clustering
-and is compatible with \code{\link{stochastic_clustering_runner}}.}
+\item{clustering_algo}{A clustering function or callable (e.g., \code{kmeans}) that is stochastic and compatible with
+\code{\link{stochastic_clustering_runner}}.}
 
 \item{labels_name}{A string with the name of the label containing the clusters returned by the algorithm.}
 
-\item{perturbation_func}{A function that takes \code{data} and returns a perturbed version
-of the same shape/type.}
+\item{perturbation_func}{A function that takes \code{data} and returns a perturbed version of the dataset
+(of the same shape/type).}
 
-\item{n_perturbations}{Integer: number of perturbation trials (default 10).}
+\item{n_perturbations}{Integer; number of perturbation trials (default is 10).}
 
-\item{n_runs}{Integer: number of runs for repeated stochastic clustering (default 30).}
+\item{n_runs}{Integer; number of repeated clustering runs per perturbation (default is 30).}
 
-\item{verbose}{Logical: if \code{TRUE}, prints progress (default \code{FALSE}).}
+\item{verbose}{Logical; if \code{TRUE}, prints progress messages (default is \code{FALSE}).}
 
-\item{...}{Additional parameters passed to \code{\link{stochastic_clustering_runner}}
-and subsequently to \code{clustering_algo}.}
+\item{...}{Additional parameters passed to \code{clustering_algo} via \code{stochastic_clustering_runner}.}
 }
 \value{
 A named list with:
 \describe{
-  \item{\code{baseline_majority_labels}}{Majority labels of the baseline clustering.}
-  \item{\code{baseline_ecc}}{ECC of the baseline clustering.}
-  \item{\code{perturbation_el_sim_scores}}{ List of element similarity scores for each perturbation.}
-  \item{\code{mean_score}}{Mean similarity score across perturbations.}
+  \item{\code{baseline_majority_labels}}{The majority-voting labels from the baseline clustering.}
+  \item{\code{baseline_ecc}}{The Element-Centric Consistency (ECC) score of the baseline clustering.}
+  \item{\code{perturbation_el_sim_scores}}{A numeric vector of element-wise similarity scores comparing the baseline
+        labels to the labels obtained after each perturbation.}
+  \item{\code{mean_score}}{The mean similarity score across all perturbations, indicating overall robustness.}
 }
 }
 \description{
-Test the robustness of a clustering solution to feature/data perturbations. First, runs a baseline
-clustering on the unperturbed data; then repeatedly perturbs the data and measures how similar
-each perturbed clustering is to the baseline.
+Evaluates the robustness of clustering solutions under feature perturbations.
+}
+\details{
+This function first runs a baseline clustering on the unperturbed data, then repeatedly perturbs the data
+using a user-supplied perturbation function and performs repeated stochastic clustering on each perturbed dataset.
+Element-Centric Similarity (ECS) is computed to compare the majority-voting labels of the perturbed clusterings
+against the baseline, quantifying overall robustness.
+}
+\examples{
+\dontrun{
+  set.seed(42)
+  data <- as.data.frame(matrix(rnorm(2000), nrow = 200, ncol = 10))
+  colnames(data) <- paste0("feature_", 1:10)
+  shuffle_features <- function(X) {
+    X_shuffled <- X
+    for (col in colnames(X_shuffled)) {
+      X_shuffled[[col]] <- sample(X_shuffled[[col]])
+    }
+    X_shuffled
+  }
+  perturb_results <- perturbation_robustness_tester(
+    data = data,
+    clustering_algo = kmeans,
+    labels_name = "cluster",
+    perturbation_func = shuffle_features,
+    n_perturbations = 5,
+    n_runs = 30,
+    verbose = TRUE,
+    centers = 3
+  )
+}
+
 }

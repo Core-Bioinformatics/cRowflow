@@ -2,7 +2,7 @@
 % Please edit documentation in R/plotting.R
 \name{plot_ga_fitness_evolution}
 \alias{plot_ga_fitness_evolution}
-\title{Plot the best fitness evolution over generations.}
+\title{Plot GA Fitness Evolution}
 \usage{
 plot_ga_fitness_evolution(ga_fs_history)
 }
@@ -14,5 +14,33 @@ with columns "generation" and "best_fitness".}
 A ggplot object representing the best fitness evolution plot.
 }
 \description{
-Plots the best fitness evolution across generations from a genetic algorithm.
+Plot the best fitness evolution over generations from a genetic algorithm.
+}
+\details{
+This function is intended to be used after running the GeneticAlgorithmFeatureSelector,
+where the history of best fitness per generation is returned.
+}
+\examples{
+\dontrun{
+  set.seed(42)
+  data <- matrix(rnorm(2000), nrow = 200, ncol = 10)
+
+  ga_results <- genetic_algorithm_feature_selector(
+    data = data,
+    clustering_algo = kmeans,
+    labels_name = "cluster",
+    n_runs = 30,
+    population_size = 20,
+    generations = 50,
+    tournament_selection_k = 3,
+    mutation_rate = 0.01,
+    crossover_rate = 0.8,
+    elite_size = 2,
+    n_generations_no_change = 10,
+    verbose = TRUE,
+    centers = 3
+  )
+  plot_ga_fitness_evolution(ga_results$history)
+}
+
 }

@@ -148,37 +148,37 @@ plot_optimization_of_parameter_boxplot <- function(parameter_optimizer_results_d
 plot_heatmap <- function(parameter_search_results_df,
                          key1 = NULL,
                          key2 = NULL,
-                         agg_func = base::median,
+                         agg_func = median,
                          fixed_params = NULL) {
 
   # Check if 'params' and 'median_ecc' columns exist
-  if (!all(c("params", "median_ecc") %in% base::names(parameter_search_results_df))) {
-    base::stop("The data frame must contain 'params' and 'median_ecc' columns.")
+  if (!all(c("params", "median_ecc") %in% names(parameter_search_results_df))) {
+    stop("The data frame must contain 'params' and 'median_ecc' columns.")
   }
 
   # Extract parameter names from the first element
   first_params <- parameter_search_results_df$params[[1]]
-  param_keys <- base::names(first_params)
+  param_keys <- names(first_params)
 
   # Select keys for the heatmap
-  if (base::length(param_keys) >= 2) {
-    if (base::is.null(key1)) key1 <- param_keys[1]
-    if (base::is.null(key2)) key2 <- param_keys[2]
-    base::message(base::sprintf("Selected keys for visualization: %s, %s", key1, key2))
+  if (length(param_keys) >= 2) {
+    if (is.null(key1)) key1 <- param_keys[1]
+    if (is.null(key2)) key2 <- param_keys[2]
+    message(sprintf("Selected keys for visualization: %s, %s", key1, key2))
   } else {
-    base::stop("You must have at least two parameters to create a heatmap.")
+    stop("You must have at least two parameters to create a heatmap.")
   }
 
   # Verify that key1 and key2 are in param_keys
   if (!(key1 %in% param_keys) || !(key2 %in% param_keys)) {
-    base::stop("Specify valid 'key1' and 'key2' parameters for visualization.")
+    stop("Specify valid 'key1' and 'key2' parameters for visualization.")
   }
 
-  base::message("Creating DataFrame from parameter search results...")
+  message("Creating DataFrame from parameter search results...")
 
   # Determine the data type of each key from the first row
-  key1_type <- base::class(first_params[[key1]])
-  key2_type <- base::class(first_params[[key2]])
+  key1_type <- class(first_params[[key1]])
+  key2_type <- class(first_params[[key2]])
 
   get_map_func <- function(type) {
     if (type %in% c("numeric", "integer", "double")) {
@@ -186,7 +186,7 @@ plot_heatmap <- function(parameter_search_results_df,
     } else if (type %in% c("character", "factor", "logical")) {
       return(purrr::map_chr)
     } else {
-      base::stop(base::sprintf("Unsupported data type: %s", type))
+      stop(sprintf("Unsupported data type: %s", type))
     }
   }
 
@@ -198,47 +198,47 @@ plot_heatmap <- function(parameter_search_results_df,
     parameter_search_results_df,
     !!rlang::sym(key1) := map_func_key1(.data$params, key1),
     !!rlang::sym(key2) := map_func_key2(.data$params, key2),
-    median_ecc = base::as.numeric(.data$median_ecc)
+    median_ecc = as.numeric(.data$median_ecc)
   )
   params_df <- dplyr::select(params_df, -params)
 
   if (key1_type %in% c("character", "factor", "logical")) {
-    params_df[[key1]] <- base::as.factor(params_df[[key1]])
+    params_df[[key1]] <- as.factor(params_df[[key1]])
   }
   if (key2_type %in% c("character", "factor", "logical")) {
-    params_df[[key2]] <- base::as.factor(params_df[[key2]])
+    params_df[[key2]] <- as.factor(params_df[[key2]])
   }
 
   # Apply fixed parameters if provided
-  if (!base::is.null(fixed_params)) {
-    base::message(base::sprintf(
+  if (!is.null(fixed_params)) {
+    message(sprintf(
       "Applying filters for fixed parameters: %s",
-      base::paste(base::names(fixed_params), collapse = ", ")
+      paste(names(fixed_params), collapse = ", ")
     ))
-    for (param in base::names(fixed_params)) {
-      if (param %in% base::colnames(params_df)) {
-        before_filter <- base::nrow(params_df)
+    for (param in names(fixed_params)) {
+      if (param %in% colnames(params_df)) {
+        before_filter <- nrow(params_df)
         params_df <- dplyr::filter(params_df, .data[[param]] == fixed_params[[param]])
-        after_filter <- base::nrow(params_df)
-        base::message(base::sprintf(
+        after_filter <- nrow(params_df)
+        message(sprintf(
           "Filtered %s to %s. Rows: %d -> %d",
           param, fixed_params[[param]], before_filter, after_filter
         ))
       } else {
-        base::warning(base::sprintf("Parameter '%s' not in dataset. Skipping.", param))
+        warning(sprintf("Parameter '%s' not in dataset. Skipping.", param))
       }
     }
   }
 
   # Check for duplicates
   unique_combinations <- dplyr::distinct(params_df, dplyr::across(dplyr::all_of(c(key1, key2))))
-  if (base::nrow(params_df) != base::nrow(unique_combinations)) {
-    base::message("Duplicate combinations found. Aggregating values...")
+  if (nrow(params_df) != nrow(unique_combinations)) {
+    message("Duplicate combinations found. Aggregating values...")
     heatmap_data <- dplyr::group_by(params_df, dplyr::across(dplyr::all_of(c(key1, key2)))) %>%
       dplyr::summarize(median_ecc = agg_func(.data$median_ecc, na.rm = TRUE), .groups = 'drop')
-    base::message(base::sprintf("Aggregation with '%s' done.", base::deparse(base::substitute(agg_func))))
+    message(sprintf("Aggregation with '%s' done.", deparse(substitute(agg_func))))
   } else {
-    base::message("No duplicates found. Proceeding without aggregation.")
+    message("No duplicates found. Proceeding without aggregation.")
     heatmap_data <- params_df
   }
 
@@ -337,22 +337,22 @@ plot_ga_fitness_evolution <- function(ga_fs_history) {
 #' }
 #'
 #' @export
-plot_kfold_scores <- function(kfolds_results, agg_func = base::median) {
+plot_kfold_scores <- function(kfolds_results, agg_func = median) {
 
   data_list <- list()
 
-  for (fold in base::names(kfolds_results)) {
+  for (fold in names(kfolds_results)) {
     score <- agg_func(kfolds_results[[fold]]$el_score_vector)
-    data_list <- base::append(data_list, list(data.frame(Fold = fold, Score = score)))
+    data_list <- append(data_list, list(data.frame(Fold = fold, Score = score)))
   }
-  df <- base::do.call(rbind, data_list)
+  df <- do.call(rbind, data_list)
 
   # Sort folds by the numeric portion after an underscore
   fold_sort_key <- function(fold_name) {
-    base::as.numeric(base::strsplit(fold_name, "_")[[1]][2])
+    as.numeric(strsplit(fold_name, "_")[[1]][2])
   }
-  sorted_folds <- base::names(base::sort(base::sapply(base::unique(df$Fold), fold_sort_key)))
-  df$Fold <- base::factor(df$Fold, levels = sorted_folds, ordered = TRUE)
+  sorted_folds <- names(sort(sapply(unique(df$Fold), fold_sort_key)))
+  df$Fold <- factor(df$Fold, levels = sorted_folds, ordered = TRUE)
 
   # Overall score
   overall_score <- agg_func(df$Score)
@@ -370,15 +370,15 @@ plot_kfold_scores <- function(kfolds_results, agg_func = base::median) {
     ggplot2::labs(
       x = 'Fold',
       y = 'Element Similarity Score',
-      title = base::sprintf('%s Element Similarity Scores Across K-Folds',
-                            tools::toTitleCase(base::deparse(base::substitute(agg_func))))
+      title = sprintf('%s Element Similarity Scores Across K-Folds',
+                            tools::toTitleCase(deparse(substitute(agg_func))))
     ) +
     ggplot2::annotate(
       'text',
-      x = base::length(base::levels(df$Fold)),
-      y = base::min(overall_score - 0.1, 1.0),
-      label = base::sprintf('Overall %s: %.3f',
-                            base::deparse(base::substitute(agg_func)), overall_score),
+      x = length(levels(df$Fold)),
+      y = min(overall_score - 0.1, 1.0),
+      label = sprintf('Overall %s: %.3f',
+                            deparse(substitute(agg_func)), overall_score),
       color = 'red',
       hjust = 1
     ) +

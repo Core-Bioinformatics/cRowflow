@@ -15,39 +15,64 @@ parameter_searcher(
 )
 }
 \arguments{
-\item{data}{A data matrix or data frame to cluster.}
+\item{data}{A data frame or matrix of shape \code{(n_samples, n_features)} to cluster.}
 
-\item{clustering_algo}{A function that accepts a seed parameter (named as in
-\code{parameter_name_seed}) and returns cluster labels for each row of `data`.}
+\item{clustering_algo}{A clustering function or callable (e.g., \code{kmeans}) that is stochastic and compatible with
+\code{\link{stochastic_clustering_runner}}.}
 
-\item{labels_name}{A string with the name of the label containing the clusters returned by the algorithm.}
+\item{labels_name}{A string with the name of the parameter indicating where the cluster labels are stored in
+the output of \code{clustering_algo}.}
 
-\item{param_grid}{A named list of form
-\code{list(paramA = c(values), paramB = c(values), ...)}, specifying
-all parameter values to be combined.}
+\item{param_grid}{A named list of the form \code{list(paramA = c(values), paramB = c(values), ...)} specifying all parameter
+values to be combined.}
 
-\item{n_runs}{Number of repeated runs (defaults to 30).}
+\item{n_runs}{Integer; number of repeated runs per parameter combination (default is 30).}
 
-\item{verbose}{Logical; if \code{TRUE}, print progress messages.}
+\item{verbose}{Logical; if \code{TRUE}, prints progress messages.}
 
 \item{...}{Additional parameters passed to \code{clustering_algo}.}
 }
 \value{
 A list with two components:
-\itemize{
-  \item \code{results_df}: A data frame. Each row corresponds to one parameter
-  combination and contains:
-  \itemize{
-    \item \code{params}: A (list-)column with a named list of parameter values
-    \item \code{ecc}: The numeric vector of ECC values for that combination
-    \item \code{median_ecc}: The median ECC
-  }
-  \item \code{stochastic_clustering_results}: a named list of the full
-    outputs from \code{stochastic_clustering_runner} for each parameter
-    combination, keyed by a string like \code{"paramA_valA_paramB_valB"}.
+\describe{
+  \item{\code{results_df}}{A data frame where each row corresponds to one parameter combination.
+     Each row includes:
+     \itemize{
+       \item \code{params}: a (list-)column with a named list of parameter values,
+       \item \code{ecc}: the numeric vector of ECC values for that combination,
+       \item \code{median_ecc}: the median ECC.
+     }}
+  \item{\code{stochastic_clustering_results}}{A named list of the full outputs from
+     \code{stochastic_clustering_runner} for each parameter combination, keyed by a string such as
+     \code{"paramA_valA_paramB_valB"}.}
 }
 }
 \description{
-Takes a grid of parameter combinations and runs repeated stochastic clustering
-for each combination, computing element consistency (ECC) in each case.
+Performs a full grid search over multiple clustering hyperparameters.
+}
+\details{
+This function evaluates all possible combinations of specified parameters by running repeated stochastic clustering
+for each combination and computing Element-Centric Consistency (ECC) for each setting. Its purpose is to help identify
+the optimal parameter set that maximizes clustering stability.
+}
+\examples{
+\dontrun{
+   set.seed(42)
+   data <- matrix(rnorm(2000), nrow = 200, ncol = 10)
+   param_grid <- list(
+    centers = 2:4,
+    algorithm = c("Hartigan-Wong", "Lloyd", "Forgy", "MacQueen")
+   )
+   results <- parameter_searcher(
+    data = data,
+    clustering_algo = kmeans,
+    labels_name = "cluster",
+    param_grid = param_grid,
+    n_runs = 30,
+    verbose = TRUE
+    )
+    results_df <- results$results_df
+    clustering_details <- results$stochastic_clustering_results
+}
+
 }
