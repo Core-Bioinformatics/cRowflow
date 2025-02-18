@@ -260,7 +260,7 @@ plot_heatmap <- function(parameter_search_results_df,
 #'
 #' Plot the best fitness evolution over generations from a genetic algorithm.
 #'
-#' This function is intended to be used after running the GeneticAlgorithmFeatureSelector,
+#' This function is intended to be used after running the genetic_algorithm_feature_selector,
 #' where the history of best fitness per generation is returned.
 #'
 #' @param ga_fs_history A data frame containing the history of the feature selection GA,

@@ -1,7 +1,7 @@
 Package: cRowflow
 Type: Package
 Title: cRowflow
-Version: 0.1.0
+Version: 1.0.0
 Author: Rafael Kollyfas
 Maintainer: Rafael Kollyfas <rk720@cam.ac.uk>
 Description: cRowflow is designed for assessing clustering stability through repeated stochastic clustering. 
